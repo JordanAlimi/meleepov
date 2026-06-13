@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melee PoV - Beware of Pants!</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>Melee PoV</h1>
+            <div class="level-info">
+                <span id="level-display">Level: 1</span>
+                <span id="score-display">Score: 0</span>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="dragon-container">
+                <div id="dragon" class="dragon">🐉</div>
+                <div class="health-bar-container">
+                    <div id="dragon-health-bar" class="health-bar"></div>
+                </div>
+                <div id="dragon-health-text" class="health-text">Health: 10/10</div>
+            </div>
+
+            <div class="warrior-container">
+                <div id="warrior" class="warrior looking-away">
+                    <div class="warrior-body">🧍</div>
+                    <div class="warrior-name">Pants</div>
+                </div>
+                <div id="warrior-status" class="warrior-status">Looking Away</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="hit-button" class="hit-button">⚔️ HIT MOB</button>
+            <div id="message" class="message"></div>
+        </div>
+
+        <div class="game-info">
+            <h3>How to Play:</h3>
+            <ul>
+                <li>Hit the mob to damage it</li>
+                <li>Watch out for Pants the warrior!</li>
+                <li>If Pants is looking at you when you hit, you LOSE</li>
+                <li>Defeat the mob to advance levels</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="game-over-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="game-over-title">Game Over!</h2>
+            <p id="game-over-message"></p>
+            <button id="restart-button" class="restart-button">Play Again</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
