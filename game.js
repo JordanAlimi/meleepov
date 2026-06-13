@@ -197,7 +197,7 @@ class DragonGame {
         }
 
         this.playHitSound();
-        this.showDamageNumber(-5);
+        this.showDamageNumber(-1);
         this.recordDamage(5);
         
         this.dragon.classList.add('hit');
