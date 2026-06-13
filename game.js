@@ -110,7 +110,7 @@ class DragonGame {
     }
 
     startLevel() {
-        this.dragonMaxHealth = 20 + (this.level - 1) * 10;
+        this.dragonMaxHealth = 80 + (this.level - 1) * 40;
         this.dragonHealth = this.dragonMaxHealth;
         this.gameActive = true;
         
@@ -197,14 +197,14 @@ class DragonGame {
         }
 
         this.playHitSound();
-        this.showDamageNumber(-1);
-        this.recordDamage(1);
+        this.showDamageNumber(-5);
+        this.recordDamage(5);
         
         this.dragon.classList.add('hit');
         setTimeout(() => this.dragon.classList.remove('hit'), 300);
 
-        this.dragonHealth -= 1;
-        this.score += 1;
+        this.dragonHealth -= 5;
+        this.score += 5;
 
         if (this.dragonHealth <= 0) {
             this.levelComplete();
@@ -222,7 +222,6 @@ class DragonGame {
         }
 
         this.playWinSound();
-        this.score += 100 * this.level;
         this.showMessage(`🎉 Level ${this.level} Complete!`, 'success');
 
         setTimeout(() => {
