@@ -53,6 +53,36 @@ body {
     background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
     border-radius: 15px;
     min-height: 300px;
+    position: relative;
+}
+
+.damage-numbers {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 100;
+}
+
+.damage-number {
+    position: absolute;
+    font-size: 48px;
+    font-weight: bold;
+    color: #ff6b6b;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    animation: floatUp 1s ease-out forwards;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-100px);
+    }
 }
 
 .dragon-container {
@@ -116,23 +146,18 @@ body {
     font-size: 80px;
 }
 
-.warrior-body {
+.warrior-head {
     margin-bottom: 10px;
     transition: transform 0.3s ease;
 }
 
-.warrior.looking-away .warrior-body {
-    transform: scaleX(-1);
-}
-
-.warrior.looking-at-you .warrior-body {
-    transform: scaleX(1);
+.warrior.looking-at-you .warrior-head {
     animation: alert 0.5s ease-in-out;
 }
 
 @keyframes alert {
-    0%, 100% { transform: scaleX(1); }
-    50% { transform: scaleX(1.1); }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 .warrior-name {

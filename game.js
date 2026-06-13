@@ -2,12 +2,15 @@ class DragonGame {
     constructor() {
         this.level = 1;
         this.score = 0;
-        this.dragonHealth = 10;
-        this.dragonMaxHealth = 10;
+        this.dragonHealth = 20;
+        this.dragonMaxHealth = 20;
         this.isWarriorLooking = false;
         this.gameActive = true;
         this.turnInterval = null;
         this.audioContext = null;
+        this.pendingTimeouts = [];
+        this.damageHistory = [];
+        this.dps = 0;
         
         this.initElements();
         this.initEventListeners();
@@ -18,6 +21,7 @@ class DragonGame {
     initElements() {
         this.dragon = document.getElementById('dragon');
         this.warrior = document.getElementById('warrior');
+        this.warriorHead = document.querySelector('.warrior-head');
         this.hitButton = document.getElementById('hit-button');
         this.message = document.getElementById('message');
         this.levelDisplay = document.getElementById('level-display');
@@ -25,6 +29,8 @@ class DragonGame {
         this.dragonHealthBar = document.getElementById('dragon-health-bar');
         this.dragonHealthText = document.getElementById('dragon-health-text');
         this.warriorStatus = document.getElementById('warrior-status');
+        this.damageNumbers = document.getElementById('damage-numbers');
+        this.dpsDisplay = document.getElementById('dps-display');
         this.gameOverModal = document.getElementById('game-over-modal');
         this.gameOverTitle = document.getElementById('game-over-title');
         this.gameOverMessage = document.getElementById('game-over-message');
@@ -104,9 +110,14 @@ class DragonGame {
     }
 
     startLevel() {
-        this.dragonMaxHealth = 10 + (this.level - 1) * 5;
+        this.dragonMaxHealth = 20 + (this.level - 1) * 10;
         this.dragonHealth = this.dragonMaxHealth;
         this.gameActive = true;
+        
+        this.warriorHead.textContent = '😌';
+        this.warriorStatus.textContent = 'Looking Away';
+        this.warriorStatus.classList.remove('danger');
+        this.warriorStatus.classList.add('safe');
         
         this.updateDisplay();
         this.startWarriorBehavior();
@@ -118,6 +129,8 @@ class DragonGame {
         if (this.turnInterval) {
             clearInterval(this.turnInterval);
         }
+        
+        this.clearAllTimeouts();
 
         const baseInterval = 3000;
         const levelDifficulty = Math.max(500, baseInterval - (this.level - 1) * 300);
@@ -133,19 +146,26 @@ class DragonGame {
 
         const randomTime = Math.random() * (maxTime - minTime) + minTime;
         
-        setTimeout(() => {
+        const turnTimeout = setTimeout(() => {
             if (!this.gameActive) return;
             
             this.toggleWarriorLooking();
             
             const lookDuration = Math.max(300, 1000 - (this.level - 1) * 100);
-            setTimeout(() => {
+            const lookTimeout = setTimeout(() => {
                 if (this.gameActive) {
                     this.toggleWarriorLooking();
                     this.scheduleNextTurn(minTime, maxTime);
                 }
             }, lookDuration);
+            this.pendingTimeouts.push(lookTimeout);
         }, randomTime);
+        this.pendingTimeouts.push(turnTimeout);
+    }
+
+    clearAllTimeouts() {
+        this.pendingTimeouts.forEach(timeout => clearTimeout(timeout));
+        this.pendingTimeouts = [];
     }
 
     toggleWarriorLooking() {
@@ -154,12 +174,14 @@ class DragonGame {
         if (this.isWarriorLooking) {
             this.warrior.classList.remove('looking-away');
             this.warrior.classList.add('looking-at-you');
+            this.warriorHead.textContent = '😠';
             this.warriorStatus.textContent = '👀 WATCHING!';
             this.warriorStatus.classList.remove('safe');
             this.warriorStatus.classList.add('danger');
         } else {
             this.warrior.classList.remove('looking-at-you');
             this.warrior.classList.add('looking-away');
+            this.warriorHead.textContent = '😌';
             this.warriorStatus.textContent = 'Looking Away';
             this.warriorStatus.classList.remove('danger');
             this.warriorStatus.classList.add('safe');
@@ -175,12 +197,14 @@ class DragonGame {
         }
 
         this.playHitSound();
+        this.showDamageNumber(-5);
+        this.recordDamage(5);
         
         this.dragon.classList.add('hit');
         setTimeout(() => this.dragon.classList.remove('hit'), 300);
 
         this.dragonHealth -= 1;
-        this.score += 10 * this.level;
+        this.score += 5;
 
         if (this.dragonHealth <= 0) {
             this.levelComplete();
@@ -216,11 +240,11 @@ class DragonGame {
         if (victory) {
             this.playWinSound();
             this.gameOverTitle.textContent = '🏆 Victory!';
-            this.gameOverMessage.textContent = `You defeated all dragons! Final Score: ${this.score}`;
+            this.gameOverMessage.textContent = `You defeated all mobs! Final Damage: ${this.score}`;
         } else {
             this.playLoseSound();
             this.gameOverTitle.textContent = '💀 Caught by Pants!';
-            this.gameOverMessage.textContent = `Pants saw you attack! You reached Level ${this.level} with ${this.score} points.`;
+            this.gameOverMessage.textContent = `Pants saw you attack! You reached Level ${this.level} with ${this.score} damage.`;
         }
 
         this.gameOverModal.classList.remove('hidden');
@@ -228,8 +252,11 @@ class DragonGame {
 
     restart() {
         this.gameOverModal.classList.add('hidden');
+        this.clearAllTimeouts();
         this.level = 1;
         this.score = 0;
+        this.damageHistory = [];
+        this.dps = 0;
         this.isWarriorLooking = false;
         
         this.warrior.classList.remove('looking-at-you');
@@ -242,13 +269,38 @@ class DragonGame {
         this.startLevel();
     }
 
+    recordDamage(damage) {
+        const now = Date.now();
+        this.damageHistory.push({ damage, timestamp: now });
+        
+        this.damageHistory = this.damageHistory.filter(entry => now - entry.timestamp < 1000);
+        
+        const totalDamage = this.damageHistory.reduce((sum, entry) => sum + entry.damage, 0);
+        this.dps = totalDamage;
+        
+        this.updateDisplay();
+    }
+
     updateDisplay() {
         this.levelDisplay.textContent = `Level: ${this.level}`;
-        this.scoreDisplay.textContent = `Score: ${this.score}`;
+        this.scoreDisplay.textContent = `Total Damage: ${this.score}`;
+        this.dpsDisplay.textContent = `DPS: ${this.dps.toFixed(1)}`;
         
         const healthPercent = (this.dragonHealth / this.dragonMaxHealth) * 100;
         this.dragonHealthBar.style.width = `${healthPercent}%`;
         this.dragonHealthText.textContent = `Health: ${this.dragonHealth}/${this.dragonMaxHealth}`;
+    }
+
+    showDamageNumber(damage) {
+        const damageEl = document.createElement('div');
+        damageEl.className = 'damage-number';
+        damageEl.textContent = damage;
+        
+        this.damageNumbers.appendChild(damageEl);
+        
+        setTimeout(() => {
+            damageEl.remove();
+        }, 1000);
     }
 
     showMessage(text, type) {
