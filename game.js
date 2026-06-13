@@ -204,7 +204,7 @@ class DragonGame {
         setTimeout(() => this.dragon.classList.remove('hit'), 300);
 
         this.dragonHealth -= 1;
-        this.score += 5;
+        this.score += 1;
 
         if (this.dragonHealth <= 0) {
             this.levelComplete();
